@@ -10,7 +10,7 @@ class Room extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'description', 'price', 'capacity'];
+    protected $fillable = ['boarding_house_id', 'name', 'room_type', 'capacity', 'square_feet', 'price_per_month', 'is_available'];
 
     public function boardingHouse()
     {
