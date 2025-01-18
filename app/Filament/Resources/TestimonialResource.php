@@ -17,13 +17,33 @@ class TestimonialResource extends Resource
 {
     protected static ?string $model = Testimonial::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
+
+    protected static ?string $navigationGroup = 'Boarding House Management';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\FileUpload::make('photo')
+                    ->image()
+                    ->directory('testimonials')
+                    ->columnSpanFull()
+                    ->required(),
+                Forms\Components\Select::make('boarding_house_id')
+                    ->relationship('boardingHouse', 'name')
+                    ->columnSpan(2)
+                    ->required(),
+                Forms\Components\TextInput::make('name')
+                    ->required(),
+                Forms\Components\TextInput::make('rating')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(5)
+                    ->required(),
+                Forms\Components\RichEditor::make('content')
+                    ->columnSpanFull()
+                    ->required(),
             ]);
     }
 
@@ -31,7 +51,10 @@ class TestimonialResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\ImageColumn::make('photo'),
+                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('rating'),
+                Tables\Columns\TextColumn::make('content'),
             ])
             ->filters([
                 //
