@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Interfaces\BoardingHouseRepositoryInterface; 
 use App\Models\BoardingHouse;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\Room;
 
 class BoardingHouseRepository implements BoardingHouseRepositoryInterface
 {
@@ -53,5 +54,10 @@ class BoardingHouseRepository implements BoardingHouseRepositoryInterface
     public function getPopularBoardingHouses($limit = 5)
     {
         return BoardingHouse::withCount('transactions')->orderBy('transactions_count', 'desc')->limit($limit)->get();
+    }
+
+    public function getBoardingHouseRoomById($id)
+    {
+        return Room::find($id);
     }
 }
