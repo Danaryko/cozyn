@@ -84,6 +84,17 @@ class BookingController extends Controller
         return redirect($paymentUrl);
     }
 
+    public function success(Request $request)
+    {
+        $transaction = $this->transactionRepository->getTransactionByCode($request->order_id);
+
+        if (!$transaction) {
+            return redirect()->route('home');
+        }
+
+        return view('pages.booking.success', compact('transaction'));
+    }
+
     public function check()
     {
         return view('pages.check-booking');
