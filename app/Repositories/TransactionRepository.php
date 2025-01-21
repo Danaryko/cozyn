@@ -42,7 +42,7 @@ class TransactionRepository implements TransactionRepositoryInterface
     private function prepareTransactionData($data, $room)
     {
         $data['code'] = $this->generateTransactionCode();
-        $data['payment_status'] = 'pending';
+        $data['payment_status'] = 'paid';
         $data['transaction_date'] = now();
 
         $total = $this->calculateTotalAmount($room->price_per_month, $data['duration']);
