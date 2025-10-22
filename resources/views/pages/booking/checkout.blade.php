@@ -119,7 +119,7 @@
                 <p class="text-ngekos-grey">Ended At</p>
             </div>
             <p class="font-semibold">
-            {{\Carbon\Carbon::parse($transaction['start_date'])->addMonths(intval($transaction['duration']))->isoFormat('D MMMM YYYY')}}
+                {{\Carbon\Carbon::parse($transaction['start_date'])->addMonths(intval($transaction['duration']))->isoFormat('D MMMM YYYY')}}
             </p>
         </div>
     </div>

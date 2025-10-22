@@ -12,9 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        if (env(key: 'APP_ENV') !=='local') {
-            URL::forceScheme(scheme:'https');
-            }
+        //
     }
 
     /**
@@ -22,8 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (env(key: 'APP_ENV') === 'local' && request()->server(key: 'HTTP_X_FORWARDED_PROTO') === 'https') {
-            URL::forceScheme(scheme: 'https');
+        //
+        if (str_contains(request()->url(), 'ngrok-free.app')) {
+            URL::forceScheme('https');
         }
     }
 }

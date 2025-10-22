@@ -14,7 +14,7 @@
     <div id="Header" class="relative flex items-center justify-between gap-2 px-5 mt-[18px]">
         <div class="flex flex-col gap-[6px]">
             <h1 class="font-bold text-[32px] leading-[48px]">Search Result</h1>
-            <p class="text-ngekos-grey">Tersedia 1,304 Kos</p>
+            <p class="text-ngekos-grey">Tersedia {{ $boardingHouses->count() }}</p>
         </div>
     </div>
     <section id="Result" class=" relative flex flex-col gap-4 px-5 mt-5 mb-9">
@@ -46,9 +46,11 @@
                 </div>
             </div>
         </a>
+
         @endforeach
+
     </section>
 </div>
 
-@include('includes.navigation')
+    @include('includes.navigation')
 @endsection

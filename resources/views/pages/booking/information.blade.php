@@ -16,7 +16,8 @@
     <div class="flex flex-col w-full rounded-[30px] border border-[#F1F2F6] p-4 gap-4 bg-white">
         <div class="flex gap-4">
             <div class="flex w-[120px] h-[132px] shrink-0 rounded-[30px] bg-[#D9D9D9] overflow-hidden">
-                <img src="{{asset('storage/' . $boardingHouse->thumbnail)}}" class="w-full h-full object-cover" alt="icon">
+                <img src="{{asset('storage/' . $boardingHouse->thumbnail)}}" class="w-full h-full object-cover"
+                    alt="icon">
             </div>
             <div class="flex flex-col gap-3 w-full">
                 <p class="font-semibold text-lg leading-[27px] line-clamp-2 min-h-[54px]">
@@ -29,7 +30,8 @@
                         {{$boardingHouse->city->name}}
                 </div>
                 <div class="flex items-center gap-[6px]">
-                    <img src="{{asset('assets/images/icons/profile-2user.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
+                    <img src="{{asset('assets/images/icons/profile-2user.svg')}}" class="w-5 h-5 flex shrink-0"
+                        alt="icon">
                     <p class="text-sm text-ngekos-grey">{{$boardingHouse->category->name}}</p>
                 </div>
             </div>
@@ -37,13 +39,15 @@
         <hr class="border-[#F1F2F6]">
         <div class="flex gap-4">
             <div class="flex w-[120px] h-[156px] shrink-0 rounded-[30px] bg-[#D9D9D9] overflow-hidden">
-                <img src="{{ asset('storage/' . $room->images->first()->image) }}" class="w-full h-full object-cover" alt="icon">
+                <img src="{{ asset('storage/' . $room->images->first()->image) }}" class="w-full h-full object-cover"
+                    alt="icon">
             </div>
             <div class="flex flex-col gap-3 w-full">
                 <p class="font-semibold text-lg leading-[27px]">{{ $room->name }}</p>
                 <hr class="border-[#F1F2F6]">
                 <div class="flex items-center gap-[6px]">
-                    <img src="{{asset('assets/images/icons/profile-2user.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
+                    <img src="{{asset('assets/images/icons/profile-2user.svg')}}" class="w-5 h-5 flex shrink-0"
+                        alt="icon">
                     <p class="text-sm text-ngekos-grey">{{ $room->capacity }}</p>
                 </div>
                 <div class="flex items-center gap-[6px]">
@@ -51,13 +55,15 @@
                     <p class="text-sm text-ngekos-grey">{{$room->square_feet}} sqft</p>
                 </div>
                 <hr class="border-[#F1F2F6]">
-                <p class="font-semibold text-lg text-ngekos-orange">Rp{{ number_format($room->price_per_month, 0, ',', ',')}}<span
+                <p class="font-semibold text-lg text-ngekos-orange">
+                    Rp{{ number_format($room->price_per_month, 0, ',', ',')}}<span
                         class="text-sm text-ngekos-grey font-normal">/bulan</span></p>
             </div>
         </div>
     </div>
 </div>
-<form action="{{route('booking.information.save', $boardingHouse->slug)}}" class="relative flex flex-col gap-6 mt-5 pt-5 bg-[#F5F6F8]" method="POST">
+<form action="{{route('booking.information.save', $boardingHouse->slug)}}"
+    class="relative flex flex-col gap-6 mt-5 pt-5 bg-[#F5F6F8]" method="POST">
     @csrf
     <div class="flex flex-col gap-[6px] px-5">
         <h1 class="font-semibold text-lg">Your Informations</h1>
@@ -72,11 +78,10 @@
                 <input type="text" name="name" id=""
                     class="appearance-none outline-none w-full font-semibold placeholder:text-ngekos-grey placeholder:font-normal"
                     placeholder="Write your name" value="{{old('name')}}">
+                @error('name')
+                    <span class="text-sm text-red-500 ">{{ $message }}</span>
+                @enderror
             </label>
-
-            @error('name')
-                <p class="text-sm text-red-500 ">{{ $message }}</p>
-            @enderror
         </div>
         <div class="flex flex-col w-full gap-2 px-5">
             <p class="font-semibold">Email Address</p>
@@ -86,11 +91,10 @@
                 <input type="email" name="email" id=""
                     class="appearance-none outline-none w-full font-semibold placeholder:text-ngekos-grey placeholder:font-normal"
                     placeholder="Write your email" value="{{old('email')}}">
+                @error('email')
+                    <p class="text-red-500 text-sm">{{ $message }}</p>
+                @enderror
             </label>
-
-            @error('email')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
         </div>
         <div class="flex flex-col w-full gap-2 px-5">
             <p class="font-semibold">Phone No</p>
@@ -99,12 +103,11 @@
                 <img src="{{asset('assets/images/icons/call.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
                 <input type="tel" name="phone_number" id=""
                     class="appearance-none outline-none w-full font-semibold placeholder:text-ngekos-grey placeholder:font-normal"
-                    placeholder="Write your phone" value="{{old('phone')}}">
+                    placeholder="Write your phone" value="{{old('phone_number')}}">
+                @error('phone_number')
+                    <p class="text-sm text-red-500 ">{{ $message }}</p>
+                @enderror
             </label>
-
-            @error('phone')
-                <p class="text-sm text-red-500 ">{{ $message }}</p>
-            @enderror
         </div>
         <div class="flex items-center justify-between px-5">
             <p class="font-semibold">Duration in Month</p>
@@ -142,13 +145,13 @@
                     Now</button>
             </div>
         </div>
-    </div>  
+    </div>
 </form>
 @endsection
 
 @section('scripts')
-    <script>
-        const defaultPrice = {{$room->price_per_month}};
-    </script>
-    <script src="{{asset('assets/js/cust-info.js')}}"></script>
+<script>
+    const defaultPrice = {{$room->price_per_month}};
+</script>
+<script src="{{asset('assets/js/cust-info.js')}}"></script>
 @endsection

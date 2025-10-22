@@ -37,7 +37,7 @@ class TransactionResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('email')
                     ->required(),
-                Forms\Components\TextInput::make('phone')
+                Forms\Components\TextInput::make('phone_number')
                     ->required(),
                 Forms\Components\Select::make('payment_method')
                     ->options([
