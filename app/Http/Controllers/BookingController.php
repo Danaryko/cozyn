@@ -7,6 +7,8 @@ use App\Http\Requests\CustomerInformationStoreRequest;
 use App\Interfaces\BoardingHouseRepositoryInterface;
 use App\Interfaces\TransactionRepositoryInterface;
 use Illuminate\Http\Request;
+use App\Models\Transaction;
+use App\Models\Room;
 
 class BookingController extends Controller
 {
@@ -57,22 +59,47 @@ class BookingController extends Controller
 
     public function payment(Request $request)
     {
+        dd([
+            'ISI_SESSION' => session()->all(),
+            'ISI_REQUEST' => $request->all(),
+        ]);
+        // 1. Simpan input ke session (SOP standar)
         $this->transactionRepository->saveTransactionDataToSession($request->all());
-        $transaction = $this->transactionRepository->saveTransaction($this->transactionRepository->getTransactionDataFromSession());
 
-        // Set your Merchant Server Key
+        // 2. Ambil data dari session
+        $data = $this->transactionRepository->getTransactionDataFromSession();
+
+        // 3. Ambil data Room untuk menghitung harga (Manual)
+        $room = Room::find($data['room_id']);
+
+        // 4. 🔥 RACIK DATA SECARA MANUAL (BYPASS REPOSITORY) 🔥
+        // Kita isi semua field wajib di sini supaya tidak ada alasan error lagi
+        $data['code'] = 'TRX-' . mt_rand(10000, 99999); // Kode Unik
+        $data['payment_status'] = 'paid'; // Status Langsung Paid
+        $data['transaction_date'] = now(); // Tanggal Transaksi
+
+        // Hitung Total Bayar Manual
+        $subtotal = $room->price_per_month * $data['duration'];
+        $tax = $subtotal * 0.11;      // PPN 11%
+        $insurance = $subtotal * 0.01; // Asuransi 1%
+        $total = $subtotal + $tax + $insurance;
+        
+        // Cek metode pembayaran (Full / DP 30%)
+        $data['total_amount'] = ($data['payment_method'] === 'full_payment') ? $total : ($total * 0.3);
+
+        // 5. Simpan ke Database LANGSUNG via Model (Tanpa lewat Repository yang error)
+        $transaction = Transaction::create($data);
+
+        // 6. Konfigurasi Midtrans (Tetap sama)
         \Midtrans\Config::$serverKey = config('midtrans.serverKey');
-        // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
         \Midtrans\Config::$isProduction = config('midtrans.isProduction');
-        // Set sanitization on (default)
         \Midtrans\Config::$isSanitized = config('midtrans.isSanitized');
-        // Set 3DS transaction for credit card to true
         \Midtrans\Config::$is3ds = config('midtrans.is3ds');
 
         $params = [
             'transaction_details' => [
                 'order_id' => $transaction->code,
-                'gross_amount' => $transaction->total_amount,
+                'gross_amount' => (int) $transaction->total_amount,
             ],
             'customer_details' => [
                 'first_name' => $transaction->name,

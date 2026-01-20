@@ -16,4 +16,5 @@ class EditBoardingHouse extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    
 }

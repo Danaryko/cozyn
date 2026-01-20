@@ -20,6 +20,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Set;
+use App\Filament\Resources\BoardingHouseResource\RelationManagers\RoomsRelationManager;
 
 class BoardingHouseResource extends Resource
 {
@@ -173,7 +174,8 @@ class BoardingHouseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+        // Pastikan class ini dipanggil
+            RelationManagers\RoomsRelationManager::class,
         ];
     }
 

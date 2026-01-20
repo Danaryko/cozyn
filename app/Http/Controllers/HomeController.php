@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BoardingHouse;
 use App\Models\Category;
 use App\Models\City;
+use App\Models\Transaction; // Jangan lupa import ini
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -14,29 +15,25 @@ class HomeController extends Controller
         $categories = Category::all();
         $cities = City::all();
         
-        // 1. Data untuk bagian "Popular Kos" (Kita ambil 5 secara acak)
         $popularBoardingHouses = BoardingHouse::with(['city', 'category'])
             ->inRandomOrder()
             ->take(5)
             ->get();
 
-        // 2. Data untuk bagian "All Great Kost" (Kita ambil 5 terbaru)
         $boardingHouses = BoardingHouse::with(['city', 'category'])
             ->latest()
             ->take(5)
             ->get();
 
-        // Kirimkan SEMUA variabel ke view
         return view('pages.home', compact('categories', 'cities', 'popularBoardingHouses', 'boardingHouses'));
     }
 
-    // --- TAMBAHKAN 3 FUNGSI INI ---
+    // --- FITUR PENCARIAN & DETAIL ---
 
     public function category($slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();
         $boardingHouses = BoardingHouse::where('category_id', $category->id)->get();
-        // Pastikan file view ini nanti dibuat
         return view('pages.category.show', compact('category', 'boardingHouses'));
     }
 
@@ -44,7 +41,6 @@ class HomeController extends Controller
     {
         $city = City::where('slug', $slug)->firstOrFail();
         $boardingHouses = BoardingHouse::where('city_id', $city->id)->get();
-        // Pastikan file view ini nanti dibuat
         return view('pages.city.show', compact('city', 'boardingHouses'));
     }
 
@@ -52,7 +48,6 @@ class HomeController extends Controller
     {
         $boardingHouse = BoardingHouse::where('slug', $slug)->firstOrFail();
         
-        // Cek status like
         $isWishlist = false;
         if (auth()->check()) {
             $isWishlist = auth()->user()->hasLiked($boardingHouse->id);
@@ -61,25 +56,18 @@ class HomeController extends Controller
         return view('pages.boarding-house.show', compact('boardingHouse', 'isWishlist'));
     }
 
+    // --- FITUR USER DASHBOARD ---
+
     public function favorites()
     {
-        // Ambil daftar kost yang disukai user
         $boardingHouses = auth()->user()->wishlists()->with('city')->get();
-        
         return view('pages.my-favorites', compact('boardingHouses'));
-    }
-
-    public function orders()
-    {
-        // Nanti bisa diganti dengan data transaksi asli
-        return view('pages.my-orders');
     }
 
     public function toggleWishlist($id)
     {
         $boardingHouse = BoardingHouse::findOrFail($id);
         
-        // Logika Toggle: Kalau sudah ada -> hapus (detach), kalau belum -> tambah (attach)
         if (auth()->user()->hasLiked($id)) {
             auth()->user()->wishlists()->detach($id);
         } else {
@@ -89,9 +77,9 @@ class HomeController extends Controller
         return redirect()->back();
     }
 
-    // ----------------------------------------------------
-    // STEP 1: PILIH TANGGAL
-    // ----------------------------------------------------
+    // --- ALUR BOOKING (STEP 1 - 3) ---
+
+    // STEP 1: Cek Ketersediaan & Tanggal
     public function check_booking($slug)
     {
         $boardingHouse = BoardingHouse::where('slug', $slug)->firstOrFail();
@@ -100,31 +88,25 @@ class HomeController extends Controller
 
     public function check_booking_store(Request $request, $slug)
     {
-        // Validasi
         $request->validate([
             'start_date' => 'required|date',
             'duration'   => 'required|integer|min:1',
         ]);
 
-        // Simpan ke session
         session()->put('booking_data', [
             'slug' => $slug,
             'start_date' => $request->start_date,
             'duration' => $request->duration,
         ]);
 
-        // UBAH ARAH: Ke halaman Information dulu (bukan checkout)
         return redirect()->route('booking.information', $slug);
     }
 
-    // ----------------------------------------------------
-    // STEP 2: ISI DATA DIRI (booking.information)
-    // ----------------------------------------------------
+    // STEP 2: Informasi Data Diri
     public function booking_information($slug)
     {
         $boardingHouse = BoardingHouse::where('slug', $slug)->firstOrFail();
         
-        // Cek apakah user sudah pilih tanggal?
         if (!session()->has('booking_data')) {
             return redirect()->route('booking.check', $slug);
         }
@@ -134,14 +116,12 @@ class HomeController extends Controller
 
     public function booking_information_store(Request $request, $slug)
     {
-        // Validasi Data Diri
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|email',
             'phone' => 'required|string',
         ]);
 
-        // Tambahkan data diri ke session booking yang sudah ada
         $bookingData = session()->get('booking_data');
         $bookingData['name'] = $request->name;
         $bookingData['email'] = $request->email;
@@ -149,39 +129,66 @@ class HomeController extends Controller
         
         session()->put('booking_data', $bookingData);
 
-        // Lanjut ke Checkout
         return redirect()->route('checkout', $slug);
     }
 
-    // ----------------------------------------------------
-    // STEP 3: CHECKOUT (Review & Bayar)
-    // ----------------------------------------------------
+    // STEP 3: Review & Simpan Transaksi
     public function checkout($slug)
     {
         $boardingHouse = BoardingHouse::where('slug', $slug)->firstOrFail();
         $bookingData = session()->get('booking_data');
 
-        // --- PENGAMAN (VALIDASI DATA) ---
-        // Jika data booking hilang, kembalikan ke cek tanggal
         if (!$bookingData) {
             return redirect()->route('booking.check', $slug);
         }
-
-        // Jika data nama/email belum diisi, kembalikan ke input data diri
-        if (!isset($bookingData['name']) || !isset($bookingData['email'])) {
-            return redirect()->route('booking.information', $slug);
-        }
-        // -------------------------------
 
         return view('pages.booking.checkout', compact('boardingHouse', 'bookingData'));
     }
     
     public function checkout_store(Request $request, $slug)
     {
-        // Proses simpan transaksi / Midtrans disini
-        return redirect()->route('payment.success');
+        // 1. Ambil Data Booking dari Session (Laci 'booking_data')
+        $bookingData = session()->get('booking_data');
+
+        if (!$bookingData) {
+            return redirect()->route('booking.check', $slug);
+        }
+
+        // 2. Ambil Data Kost
+        $boardingHouse = BoardingHouse::where('slug', $slug)->firstOrFail();
+
+        // 3. Otomatis Pilih Kamar yang Tersedia
+        $room = $boardingHouse->rooms()->where('is_available', true)->first();
+
+        if (!$room) {
+            return redirect()->back()->with('error', 'Maaf, kamar di kost ini sedang penuh.');
+        }
+
+        // 4. Hitung Total Harga (Perbaiki 'price' jadi 'price_per_month')
+        $duration = (int) $bookingData['duration'];
+        $totalAmount = $room->price_per_month * $duration;
+
+        // 5. Simpan Transaksi (LENGKAP DENGAN CODE & MAPPING DATA)
+        $transaction = Transaction::create([
+            'code'              => 'TRX-' . mt_rand(10000, 99999), // <-- INI YANG DULU HILANG
+            'user_id'           => auth()->id(),
+            'room_id'           => $room->id,
+            'boarding_house_id' => $boardingHouse->id,
+            'total_amount'      => $totalAmount,
+            'payment_status'    => 'pending', // Status awal Pending
+            'payment_method'    => 'full_payment', // Default method
+            'start_date'        => $bookingData['start_date'],
+            'duration'          => $duration,
+            'name'              => $bookingData['name'],
+            'email'             => $bookingData['email'],
+            'phone_number'      => $bookingData['phone'], // <-- Mapping: phone ke phone_number
+        ]);
+
+        // 6. Redirect ke PaymentController untuk proses Midtrans
+        return redirect()->route('payment.pay', $transaction->id);
     }
 
+    // Halaman Terima Kasih (Setelah Bayar)
     public function payment_success()
     {
         return view('pages.booking.success');

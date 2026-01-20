@@ -10,7 +10,7 @@ class Transaction extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['code', 'boarding_house_id', 'room_id', 'name', 'email', 
+    protected $fillable = ['code', 'boarding_house_id', 'room_id', 'user_id', 'name', 'email', 
     'phone_number', 'payment_method', 'payment_status', 'start_date', 'duration', 'total_amount', 'transaction_date'];
 
     public function boardingHouse()

@@ -224,7 +224,7 @@ class BoardingHouseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\RoomsRelationManager::class,
         ];
     }
 

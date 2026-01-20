@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Room;
+use App\Policies\RoomPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
@@ -21,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+        Gate::policy(Room::class, RoomPolicy::class);
         if (str_contains(request()->url(), 'ngrok-free.app')) {
             URL::forceScheme('https');
         }

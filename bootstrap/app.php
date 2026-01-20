@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         //
     })
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/callback', // <-- Tambahkan ini
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
