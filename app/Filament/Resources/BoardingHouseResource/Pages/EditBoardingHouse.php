@@ -16,4 +16,11 @@ class EditBoardingHouse extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    // --- TAMBAHKAN FUNGSI INI ---
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+    // ----------------------------
 }

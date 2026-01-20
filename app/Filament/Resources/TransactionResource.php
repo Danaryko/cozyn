@@ -19,7 +19,7 @@ class TransactionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
-    protected static ?string $navigationGroup = 'Boarding House Management';
+    protected static ?string $navigationGroup = 'Finance';
 
     public static function form(Form $form): Form
     {

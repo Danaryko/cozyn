@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
+    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?int $navigationSort = 1; // Urutan
     protected static ?string $model = Category::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';

@@ -16,4 +16,12 @@ class EditCategory extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    // --- TAMBAHKAN FUNGSI INI ---
+    protected function getRedirectUrl(): string
+    {
+        // Arahkan kembali ke halaman List (Index) setelah simpan
+        return $this->getResource()::getUrl('index');
+    }
+    // ----------------------------
 }

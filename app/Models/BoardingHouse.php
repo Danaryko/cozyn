@@ -10,7 +10,30 @@ class BoardingHouse extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'slug', 'thumbnail', 'city_id', 'category_id', 'description', 'price', 'address'];
+    protected $fillable = [
+    'user_id',
+    'city_id',    
+    'category_id',
+    'name',
+    'slug',
+    'address',
+    'description',
+    'price',
+    'thumbnail',
+    'room_size',
+    'room_facilities',
+    'bathroom_facilities',
+    'general_facilities', 
+    'parking_facilities',
+    'rules',
+    'status',
+    ];
+
+    protected $casts = [
+    'room_facilities' => 'array',
+    'bathroom_facilities' => 'array',
+    'rules' => 'array',
+    ];
 
     public function city()  {
         return $this->belongsTo(City::class);
@@ -38,5 +61,10 @@ class BoardingHouse extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

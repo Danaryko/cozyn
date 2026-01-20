@@ -10,7 +10,7 @@ class City extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['image', 'name', 'slug'];
+    protected $fillable = ['name', 'slug','image'];
 
     public function boardingHouses(){      
         return $this->hasMany(BoardingHouse::class);

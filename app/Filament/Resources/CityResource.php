@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 
 class CityResource extends Resource
 {
+    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?int $navigationSort = 1; // Urutan
     protected static ?string $model = City::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';

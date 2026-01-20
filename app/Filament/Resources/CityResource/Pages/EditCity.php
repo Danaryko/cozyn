@@ -16,4 +16,12 @@ class EditCity extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    // --- TAMBAHKAN FUNGSI INI ---
+    protected function getRedirectUrl(): string
+    {
+        // Redirect kembali ke halaman List (Index) setelah Save
+        return $this->getResource()::getUrl('index');
+    }
+    // ----------------------------
 }

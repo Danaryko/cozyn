@@ -25,6 +25,7 @@ return new class extends Migration
             $table->integer('duration');
             $table->integer('total_amount')->nullable();
             $table->date('transaction_date')->nullable();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });

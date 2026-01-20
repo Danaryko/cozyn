@@ -3,157 +3,222 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\BoardingHouseResource\Pages;
-use App\Filament\Resources\BoardingHouseResource\RelationManagers;
 use App\Models\BoardingHouse;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Columns;
-use Filament\Forms\Components\Tabs;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
+
+// Import komponen desain tambahan
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Group; // Import Group
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TagsInput; // Import TagsInput
+use Filament\Forms\Set;
 
 class BoardingHouseResource extends Resource
 {
     protected static ?string $model = BoardingHouse::class;
-
+    
     protected static ?string $navigationIcon = 'heroicon-o-home-modern';
-
-    protected static ?string $navigationGroup = 'Boarding House Management';
+    protected static ?string $navigationLabel = 'Kelola Kost';
+    protected static ?string $navigationGroup = 'Management';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Tabs')
-                    ->tabs([
-                        Tabs\Tab::make('Informasi Umum')
+                // --- KOLOM KIRI (Informasi Utama & Fasilitas) ---
+                Group::make()
+                    ->schema([
+                        // BAGIAN 1: Informasi Utama
+                        Section::make('Informasi Utama')
+                            ->description('Informasi dasar mengenai kost Anda.')
                             ->schema([
-                                Forms\Components\FileUpload::make('thumbnail')
-                                    ->image()
-                                    ->directory('boarding-houses')
-                                    ->columnSpanFull()
-                                    ->required(),
-                                Forms\Components\TextInput::make('name')
+                                TextInput::make('name')
+                                    ->label('Nama Kost')
                                     ->required()
-                                    ->debounce(500)
-                                    ->reactive()
-                                    ->afterStateUpdated(function($state, callable $set){
-                                        $set('slug', Str::slug($state));
-                                    }),
-                                Forms\Components\TextInput::make('slug')
-                                    ->required(),
-                                Forms\Components\Select::make('city_id')
-                                    ->relationship('city', 'name')
-                                    ->required(),
-                                Forms\Components\Select::make('category_id')
-                                    ->relationship('category', 'name')
-                                    ->required(),
-                                Forms\Components\RichEditor::make('description')
-                                    ->required(),
-                                Forms\Components\TextInput::make('price')
+                                    ->maxLength(255)
+                                    ->placeholder('Contoh: Wisma Cozyn Indah')
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
+
+                                TextInput::make('slug')
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->required()
+                                    ->helperText('Link unik akan terbuat otomatis.'),
+
+                                Grid::make(2)
+                                    ->schema([
+                                        Select::make('city_id')
+                                            ->label('Kota')
+                                            ->relationship('city', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
+
+                                        Select::make('category_id')
+                                            ->label('Kategori')
+                                            ->relationship('category', 'name')
+                                            ->required(),
+                                    ]),
+                                    
+                                TextInput::make('price')
+                                    ->label('Harga per Bulan')
                                     ->numeric()
-                                    ->prefix('IDR')
-                                    ->required(),
-                                Forms\Components\TextInput::make('address')
+                                    ->prefix('Rp')
                                     ->required(),
                             ]),
-                        Tabs\Tab::make('Kamar')
+
+                        // BAGIAN 2: Spesifikasi & Fasilitas (BARU DITAMBAHKAN)
+                        Section::make('Spesifikasi & Fasilitas')
+                            ->description('Detail fasilitas kamar dan peraturan kost.')
                             ->schema([
-                                Forms\Components\Repeater::make('rooms')
-                                ->relationship('rooms')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('name')
-                                            ->required(),
-                                        Forms\Components\Select::make('room_type')
-                                            ->options([
-                                                'single' => 'Single',
-                                                'double' => 'Double',
-                                                'triple' => 'Triple',
-                                                'quad' => 'Quad',
-                                            ])
-                                            ->required(),
-                                        Forms\Components\TextInput::make('square_feet')
-                                            ->numeric()
-                                            ->required(),
-                                        Forms\Components\TextInput::make('capacity')
-                                            ->numeric()
-                                            ->required(),
-                                        Forms\Components\TextInput::make('price_per_month')
-                                            ->numeric()
-                                            ->prefix('IDR')
-                                            ->required(),
-                                        Forms\Components\Checkbox::make('is_available')
-                                            ->default(true)
-                                            ->required(),
-                                        Forms\Components\Repeater::make('image')
-                                            ->relationship('images')
-                                            ->schema([
-                                                Forms\Components\FileUpload::make('image')
-                                                    ->image()
-                                                    ->directory('rooms')
-                                                    ->columnSpanFull()
-                                                    ->required(),
-                                            ]),
-                                    ]),
+                                TextInput::make('room_size')
+                                    ->label('Ukuran Kamar')
+                                    ->placeholder('Contoh: 3x4 Meter')
+                                    ->required(),
+
+                                TagsInput::make('room_facilities')
+                                    ->label('Fasilitas Kamar')
+                                    ->placeholder('Ketik fasilitas lalu tekan Enter (Cth: AC, Kasur, Meja)')
+                                    ->separator(',')
+                                    ->splitKeys(['Tab', ',']),
+
+                                TagsInput::make('bathroom_facilities')
+                                    ->label('Fasilitas Kamar Mandi')
+                                    ->placeholder('Ketik fasilitas lalu tekan Enter (Cth: Water Heater, Shower)')
+                                    ->separator(',')
+                                    ->splitKeys(['Tab', ',']),
+
+                                TagsInput::make('general_facilities')
+                                    ->label('Fasilitas Umum')
+                                    ->placeholder('Cth: Dapur, WiFi, CCTV, Penjaga, Laundry')
+                                    ->separator(',')
+                                    ->splitKeys(['Tab', ',']),
+
+                                TagsInput::make('parking_facilities')
+                                    ->label('Fasilitas Parkir')
+                                    ->placeholder('Cth: Motor, Mobil, Sepeda, Garasi')
+                                    ->separator(',')
+                                    ->splitKeys(['Tab', ',']),
+                                    
+                                TagsInput::make('rules')
+                                    ->label('Peraturan Kost')
+                                    ->placeholder('Ketik peraturan lalu tekan Enter (Cth: Dilarang Merokok)')
+                                    ->separator(',')
+                                    ->splitKeys(['Tab', ',']),
                             ]),
-                        Tabs\Tab::make('Bonus')
+                    ])
+                    ->columnSpan(2), // Grup kiri mengambil 2 kolom lebar
+
+                // --- KOLOM KANAN (Media & Lokasi) ---
+                Group::make()
+                    ->schema([
+                        Section::make('Media & Lokasi')
                             ->schema([
-                                Forms\Components\Repeater::make('bonuses')
-                                    ->relationship('bonuses')
-                                    ->schema([
-                                        Forms\Components\FileUpload::make('image')
-                                            ->image()
-                                            ->directory('bonuses')
-                                            ->columnSpanFull()
-                                            ->required(),
-                                        Forms\Components\TextInput::make('name')
-                                            ->required(),
-                                        Forms\Components\Textarea::make('description')
-                                            ->required(),
-                                    ]),
-                            ]),
-                    ])->columnSpan(2)
-            ]);
+                                FileUpload::make('thumbnail')
+                                    ->label('Foto Depan')
+                                    ->image()
+                                    ->directory('boarding_houses')
+                                    ->required(),
+
+                                Textarea::make('address')
+                                    ->label('Alamat Lengkap')
+                                    ->rows(3)
+                                    ->required(),
+                                    
+                                RichEditor::make('description')
+                                    ->label('Deskripsi Lengkap')
+                                    ->toolbarButtons(['bold', 'italic', 'bulletList'])
+                                    ->required(),
+                            ])
+                    ])
+                    ->columnSpan(1), // Grup kanan mengambil 1 kolom lebar
+
+            ])
+            ->columns(3); // Total layout dibagi 3 kolom
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                // 1. Gambar Bulat
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->label('Foto')
+                    ->circular()
+                    ->stacked(),
+
+                // 2. Nama & Kota (Digabung biar rapi)
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama Kost')
+                    ->description(fn (BoardingHouse $record): string => $record->city->name ?? '-')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('slug'),
-                Tables\Columns\TextColumn::make('city.name')
-                    ->label('City')
-                    ->searchable()
-                    ->sortable(),
+                    ->weight('bold'),
+
+                // 3. Harga dengan format Uang
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Harga')
+                    ->money('IDR')
+                    ->sortable()
+                    ->color('primary'), // Warna orange
+
+                // 4. Kategori sebagai Badge
                 Tables\Columns\TextColumn::make('category.name')
-                    ->label('Category')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('price'),
-                Tables\Columns\ImageColumn::make('thumbnail'),
+                    ->label('Kategori')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Kost Putra' => 'info',
+                        'Kost Putri' => 'danger',
+                        'Kost Campur' => 'success',
+                        default => 'gray',
+                    }),
+                    
+                // 5. Tanggal Dibuat
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Terdaftar Sejak')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('city_id')
+                    ->label('Filter Kota')
+                    ->relationship('city', 'name'),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                ]),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+        if (auth()->user()->role === 'owner') {
+            return $query->where('user_id', auth()->id());
+        }
+        return $query;
+    }
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('user_id', auth()->id())->count();
     }
 
     public static function getRelations(): array

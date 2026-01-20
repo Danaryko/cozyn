@@ -1,27 +1,24 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{ asset('assets/output.css') }}" rel="stylesheet">
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cozyn Kost</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-
-<body>
-    <div id="Content-Container"
-        class="relative flex flex-col w-full max-w-[640px] min-h-screen mx-auto bg-white overflow-x-hidden">
-
-        @yield('content')
-    </div>
+<body class="bg-gradient-to-b from-[#FAFAFA] to-[#FFF6F0] min-h-screen font-poppins text-[#070725] antialiased selection:bg-[#FF9357] selection:text-white">
     
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="{{ asset('assets/js/index.js') }}"></script>
+    @include('includes.navigation')
 
-    @yield('scripts')
+    <main class="w-full max-w-screen-2xl mx-auto px-4 md:px-8 mt-8 min-h-screen pb-20">
+        @yield('content')
+    </main>
+
+    <footer class="w-full text-center py-10 text-gray-400 text-sm mt-20 border-t border-gray-200/50">
+        <p>&copy; {{ date('Y') }} Cozyn Kost. Comfort Living.</p>
+    </footer>
+
+    @stack('before-scripts')
+    @stack('after-scripts')
 </body>
-
 </html>

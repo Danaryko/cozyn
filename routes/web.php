@@ -1,29 +1,49 @@
 <?php
 
-use App\Http\Controllers\BoardingHouseController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CityController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BoardingHouseController; // Pastikan ini di-import
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+// 1. Redirect Home ke Login
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
-//->Route for category
-Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('category.show');
-//->Route for city
-Route::get('/city/{slug}', [CityController::class, 'show'])->name('city.show');
-//->Route for boarding house
-Route::get('/kos/{slug}', [BoardingHouseController::class, 'show'])->name('kos.show');
-Route::get('/kos/{slug}/rooms', [BoardingHouseController::class, 'rooms'])->name('kos.rooms');
-Route::get('/find-kos', [BoardingHouseController::class, 'find'])->name('find-kos');
-Route::get('/find-results', [BoardingHouseController::class, 'findResults'])->name('find-kos.results');
-//->Route for booking
-Route::get('/kos/booking/{slug}/', [BookingController::class, 'booking'])->name('booking');
-Route::get('/check-booking', [BookingController::class, 'check'])->name('check-booking');
-Route::post('/check-booking', [BookingController::class, 'show'])->name('check-booking.show');
-Route::get('/kos/booking/{slug}/information', [BookingController::class, 'information'])->name('booking.information');
-Route::post('/kos/booking/{slug}/information/save', [BookingController::class, 'saveInformation'])->name('booking.information.save');
-Route::get('/kos/booking/{slug}/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
-Route::post('/kos/booking/{slug}/payment', [BookingController::class, 'payment'])->name('booking.payment');
-Route::get('/booking-success', [BookingController::class, 'success'])->name('booking.success');
+// 2. DASHBOARD & FITUR UTAMA (Perlu Login)
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('/category/{slug}', [HomeController::class, 'category'])->name('category.show');
+    Route::get('/city/{slug}', [HomeController::class, 'city'])->name('city.show');
+    
+    // --- PERBAIKAN UTAMA DISINI ---
+    // Pastikan menggunakan [BoardingHouseController::class, 'show']
+    Route::get('/details/{slug}', [BoardingHouseController::class, 'show'])->name('kos.show');
+    // ------------------------------
+
+    Route::get('/my-favorites', [HomeController::class, 'favorites'])->name('my-favorites');
+    Route::get('/my-orders', [DashboardController::class, 'orders'])->name('my-orders');
+
+    // Route Toggle Wishlist
+    Route::post('/kos/{slug}/toggle-wishlist', [BoardingHouseController::class, 'toggleWishlist'])->name('boarding-house.toggle-wishlist');
+
+    // Route Booking
+    Route::get('/booking/{slug}', [HomeController::class, 'check_booking'])->name('booking.check');
+    Route::post('/check-booking/{slug}', [HomeController::class, 'check_booking_store'])->name('check-booking.show');
+    Route::get('/booking/information/{slug}', [HomeController::class, 'booking_information'])->name('booking.information');
+    Route::post('/booking/information/{slug}', [HomeController::class, 'booking_information_store'])->name('booking.information.store');
+    Route::get('/checkout/{slug}', [HomeController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout/{slug}', [HomeController::class, 'checkout_store'])->name('checkout.store');
+    Route::get('/payment/success', [HomeController::class, 'payment_success'])->name('payment.success');
+});
+
+// 3. PROFILE ROUTES
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';

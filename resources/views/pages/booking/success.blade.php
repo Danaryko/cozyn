@@ -1,90 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
-
-<div id="Background"
-    class="absolute top-0 w-full h-[430px] rounded-b-[75px] bg-[linear-gradient(180deg,#F2F9E6_0%,#D2EDE4_100%)]"></div>
-<div class="relative flex flex-col gap-[30px] my-[60px] px-5">
-    <h1 class="font-bold text-[30px] leading-[45px] text-center">Booking Successful<br>Congratulations!</h1>
-    <div id="Header" class="relative flex items-center justify-between gap-2">
-        <div class="flex flex-col w-full rounded-[30px] border border-[#F1F2F6] p-4 gap-4 bg-white">
-            <div class="flex gap-4">
-                <div class="flex w-[120px] h-[132px] shrink-0 rounded-[30px] bg-[#D9D9D9] overflow-hidden">
-                    <img src="{{asset('storage/' . $transaction->boardingHouse->thumbnail)}}" class="w-full h-full object-cover" alt="icon">
-                </div>
-                <div class="flex flex-col gap-3 w-full">
-                    <p class="font-semibold text-lg leading-[27px] line-clamp-2 min-h-[54px]">
-                        {{$transaction->boardingHouse->name}}
-                    </p>
-                    <hr class="border-[#F1F2F6]">
-                    <div class="flex items-center gap-[6px]">
-                        <img src="{{asset('assets/images/icons/location.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
-                        <p class="text-sm text-ngekos-grey">
-                            {{$transaction->boardingHouse->city->name}}
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-[6px]">
-                        <img src="{{asset('assets/images/icons/profile-2user.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
-                        <p class="text-sm text-ngekos-grey">
-                            {{$transaction->boardingHouse->category->name}}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <hr class="border-[#F1F2F6]">
-            <div class="flex gap-4">
-                <div class="flex w-[120px] h-[138px] shrink-0 rounded-[30px] bg-[#D9D9D9] overflow-hidden">
-                    <img src="{{ asset('storage/' . $transaction->room->images->first()->image) }}" class="w-full h-full object-cover" alt="icon">
-                </div>
-                <div class="flex flex-col gap-3 w-full">
-                    <p class="font-semibold text-lg leading-[27px]">
-                        {{$transaction->room->name}}
-                    </p>
-                    <hr class="border-[#F1F2F6]">
-                    <div class="flex items-center gap-[6px]">
-                        <img src="{{asset('assets/images/icons/profile-2user.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
-                        <p class="text-sm text-ngekos-grey">
-                            {{$transaction->room->capacity}} People
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-[6px]">
-                        <img src="{{asset('assets/images/icons/3dcube.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
-                        <p class="text-sm text-ngekos-grey">
-                            {{$transaction->room->square_feet}} sqft
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-[6px]">
-                        <img src="{{asset('assets/images/icons/calendar.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
-                        <p class="text-sm text-ngekos-grey">
-                            {{ \Carbon\Carbon::parse($transaction->start_date)->isoFormat('D MMMM YYYY') }} - 
-                            {{ \Carbon\Carbon::parse($transaction->start_date)->addMonths($transaction->duration)->isoFormat('D MMMM YYYY') }}
-                        </p>
-                    </div>
-                </div>
-            </div>
+    <div class="relative min-h-screen bg-white flex flex-col items-center justify-center p-5">
+        
+        <div class="w-[120px] h-[120px] rounded-full bg-[#F2F9E6] flex items-center justify-center mb-6 animate-bounce">
+            <img src="{{ asset('assets/images/icons/card-tick.svg') }}" class="w-16 h-16" 
+                 onerror="this.src='https://api.iconify.design/solar:check-circle-bold.svg?color=%2391BF77'" 
+                 alt="Success">
         </div>
-    </div>
-    <div class="flex flex-col gap-[18px]">
-        <p class="font-semibold">Your Booking ID</p>
-        <div class="flex items-center rounded-full p-[14px_20px] gap-3 bg-[#F5F6F8]">
-            <img src="{{asset('assets/images/icons/note-favorite-green.svg')}}" class="w-5 h-5 flex shrink-0" alt="icon">
-            <p class="font-semibold">{{$transaction->code}}</p>
-        </div>
-    </div>
-    <div class="flex flex-col gap-[14px]">
-        <a href="{{ route('home') }}"
-            class="w-full rounded-full p-[14px_20px] text-center font-bold text-white bg-ngekos-orange">Explore Other
-            Kos</a>
-        <form action="{{route('check-booking.show')}}" method="POST">
-            @csrf
-            <input type="hidden" name="code" value="{{$transaction->code}}">
-            <input type="hidden" name="email" value="{{$transaction->email}}">
-            <input type="hidden" name="phone_number" value="{{$transaction->phone_number}}">
-            <button class="w-full rounded-full p-[14px_20px] text-center font-bold text-white bg-ngekos-black">
-                View My Booking
-            </button>
-        </form>
-    </div>
-</div>
 
+        <h1 class="font-bold text-[30px] leading-[45px] text-center text-[#070725] mb-2">
+            Booking Successful!
+        </h1>
+        <p class="text-[#83859C] text-center max-w-[300px] mb-10 leading-[30px]">
+            We have received your payment and the boarding house owner will contact you soon.
+        </p>
+
+        <div class="flex flex-col gap-4 w-full max-w-[320px]">
+            <a href="{{ route('dashboard') }}" class="w-full bg-[#070725] text-white py-4 rounded-full font-bold text-center hover:bg-[#FF9357] transition-all shadow-lg shadow-[#070725]/30">
+                My Dashboard
+            </a>
+            <a href="https://wa.me/" class="w-full bg-white border border-[#F1F2F6] text-[#070725] py-4 rounded-full font-bold text-center hover:bg-gray-50 transition-all">
+                Contact Support
+            </a>
+        </div>
+
+    </div>
 @endsection

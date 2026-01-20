@@ -2,48 +2,46 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+// 1. Pastikan import interface ini ada
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+// 2. Tambahkan "implements FilamentUser"
+class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
+        'role', // Pastikan kolom role ada di sini
+        'avatar',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // ... (codingan hidden/casts biarkan saja)
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // 3. TAMBAHKAN FUNGSI "SATPAM" INI
+    public function canAccessPanel(Panel $panel): bool
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        // Jika user adalah 'admin', boleh masuk kemana saja (Opsional)
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        // Jika mau masuk panel 'owner', role harus 'owner'
+        if ($panel->getId() === 'owner') {
+            return $this->role === 'owner';
+        }
+
+        // Jika mau masuk panel 'admin', role harus 'admin'
+        if ($panel->getId() === 'admin') {
+            return $this->role === 'admin';
+        }
+
+        // Selain itu, tolak akses (return false)
+        return false;
     }
 }
